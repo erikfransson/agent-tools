@@ -7,7 +7,7 @@ They run under Claude Code and Codex, which both read a `SKILL.md` from a skills
 
 - `code-review-scientific`: multi-agent review of a GitLab merge request in a scientific codebase, with a written review file and an optional post to GitLab.
   Assumes the `glab` command line tool is authenticated.
-- `figure-polish`: conventions and QA for publication figures made with matplotlib and [mplpub](https://github.com/materials-modeling/mplpub).
+- `figure-polish`: conventions and QA for publication figures made with matplotlib and [mplpub](https://gitlab.com/materials-modeling/mplpub).
 - `dream`: consolidate the session history of all local agent config directories into a short `~/.claude/DREAMED.md` of transferable facts.
   Import that file from your `~/.claude/CLAUDE.md` with a line `@~/.claude/DREAMED.md`.
 
