@@ -51,8 +51,8 @@ for i, ax in enumerate(axes_ts):
     if ax is not axes_ts[0]:
         ax.set_xticklabels([])
 
-axes_ts[0].set_xlabel('time')
-fig.text(0.01, bottom_margin / fig_h + stack_h / fig_h / 2, 'signal',
+axes_ts[0].set_xlabel('Time')
+fig.text(0.01, bottom_margin / fig_h + stack_h / fig_h / 2, 'Signal',
          rotation='vertical', va='center', ha='left')
 
 # --- right column: one heatmap of psd_delta vs freq and noise level ---
@@ -65,8 +65,8 @@ vmax = np.abs(psd_delta).max()
 im = ax_map.pcolormesh(freq, map_noise, psd_delta,
                         cmap='RdBu_r', vmin=-vmax, vmax=vmax, shading='nearest')
 ax_map.set_yscale('log')
-ax_map.set_xlabel('frequency')
-ax_map.set_ylabel('noise level $\\sigma$')
+ax_map.set_xlabel('Frequency')
+ax_map.set_ylabel('Noise level $\\sigma$')
 ax_map.text(0.02, 0.97, 'd)', transform=ax_map.transAxes, va='top', ha='left',
             bbox=dict(boxstyle='square,pad=0.1', fc='white', ec='none', alpha=0.8))
 

@@ -28,6 +28,7 @@ If the content genuinely cannot fit, say so and ask.
 
 Within that width, the data should be **as large as it can be**. Whitespace, duplicated labels and fat colorbars are area stolen from the panels.
 
+- **Axis labels start with a capital.** `Time (ps)`, `Signal`, `Noise level $\sigma$`, not `time` or `signal`.
 - **Share axis labels across a grid.** Only the bottom row gets the x label, only the left column the y label.
   Same for tick labels (`sharex`, `sharey`).
   One legend for the whole figure, not one per panel.

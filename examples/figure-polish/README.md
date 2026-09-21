@@ -41,6 +41,7 @@ Produced by [`plot_polished.py`](plot_polished.py):
 
 One y range across the three rows, so sigma = 0.05 reads as a clean oscillation and sigma = 1.00 as noise with a signal in it.
 One shared time axis with tick labels on the bottom row only, one y label for the column, and the noise level folded into the panel letter instead of a title.
+Axis labels are capitalised.
 The PSD change gets a diverging colormap on a scale symmetric about zero, so the sign is readable and white means no change, and the noise axis is logarithmic because the levels are spaced that way.
 6.6 inches wide, the double-column width, at 300 dpi, with the panels placed by hand through `fig.add_axes` so the colorbar does not pull the columns out of alignment, and the heatmap height matched to the full stack.
 
@@ -57,4 +58,3 @@ MPLBACKEND=Agg python3 plot_plain.py
 MPLBACKEND=Agg python3 plot_polished.py
 ```
 
-`plot_polished.py` needs [mplpub](https://gitlab.com/materials-modeling/mplpub) and a working LaTeX installation, since mplpub sets `usetex`.
