@@ -2,28 +2,41 @@ import numpy as np
 
 # parameters
 seed = 0
-grid = 96
-nsteps = 4000
-dt = 0.002
-nsamples = 50000
+dt = 0.01
+nsteps = 2048
+amplitudes = [0.80, 0.35]
+frequencies = [1.5, 4.2]
+trace_noise = [0.05, 0.25, 1.00]
+map_noise = np.logspace(np.log10(0.02), np.log10(1.5), 48)
+fmax = 10.0
 outfile = 'data.npz'
 
 rng = np.random.default_rng(seed)
 
-x = np.linspace(-3, 3, grid)
-y = np.linspace(-3, 3, grid)
-X, Y = np.meshgrid(x, y)
-potential = np.exp(-(X**2 + Y**2) / 2) * np.cos(2 * X) + 0.15 * rng.standard_normal((grid, grid))
-residual = potential - np.exp(-(X**2 + Y**2) / 1.6) * np.cos(2 * X - 0.3)
-
 t = np.arange(nsteps) * dt
-msd = 0.42 * t + 0.03 * np.cumsum(rng.standard_normal(nsteps)) * np.sqrt(dt)
-energy = -4.31 + 0.06 * rng.standard_normal(nsteps) + 0.02 * np.sin(2 * np.pi * t / 1.3)
+clean = sum(a * np.sin(2 * np.pi * f * t) for a, f in zip(amplitudes, frequencies))
 
-displacement = rng.gamma(2.4, 0.11, nsamples)
+traces = np.array([clean + s * rng.standard_normal(nsteps) for s in trace_noise])
 
-np.savez(outfile, x=x, y=y, potential=potential, residual=residual,
-         t=t, msd=msd, energy=energy, displacement=displacement)
-print(f'{outfile}: potential {potential.shape}, residual {residual.shape} '
-      f'in [{residual.min():.2f}, {residual.max():.2f}], t {t.shape}, '
-      f'displacement {displacement.shape}')
+freq_all = np.fft.rfftfreq(nsteps, dt)
+keep = freq_all <= fmax
+freq = freq_all[keep]
+
+
+def psd(x):
+    return np.abs(np.fft.rfft(x))**2 / nsteps
+
+
+psd_clean = psd(clean)[keep]
+floor = 1e-6
+psd_delta = np.array([
+    10 * np.log10((psd(clean + s * rng.standard_normal(nsteps))[keep] + floor)
+                  / (psd_clean + floor))
+    for s in map_noise])
+
+np.savez(outfile, t=t, clean=clean, traces=traces, trace_noise=trace_noise,
+         freq=freq, map_noise=map_noise, psd_delta=psd_delta)
+print(f'{outfile}: traces {traces.shape} at noise {trace_noise}, '
+      f'signal range [{traces.min():.2f}, {traces.max():.2f}], '
+      f'psd_delta {psd_delta.shape} in [{psd_delta.min():.1f}, {psd_delta.max():.1f}] dB, '
+      f'freq up to {freq[-1]:.1f}')

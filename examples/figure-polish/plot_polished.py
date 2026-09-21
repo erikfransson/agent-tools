@@ -6,91 +6,74 @@ import mplpub
 infile = 'data.npz'
 outfile = 'polished.png'
 dpi = 300
-fig_width = 6.6       # double-column
-left_margin = 0.55    # for y label + up to 4-digit tick labels (panel c)
-right_margin = 0.50   # room for panel d) colorbar
-mid_gap = 1.05        # room for panel a) colorbar + tick labels, and panel b)'s tick labels
-top_margin = 0.08     # no title
-row_gap = 0.42         # room for panel a)/b) tick labels
-bottom_margin = 0.40  # for x label + tick labels
-cbar_width = 0.07
-cbar_pad = 0.10
+fig_w, fig_h = 6.6, 2.85
+left_margin = 0.55      # space for left-column y ticks/label
+ts_width = 2.15         # width of the time-series column
+mid_gap = 0.62          # gap between time-series column and heatmap (room for heatmap y ticks)
+map_width = 2.56        # width of the heatmap panel
+cbar_gap = 0.10         # gap between heatmap and colorbar
+cbar_width = 0.12       # colorbar width
+right_margin = 0.42     # space for colorbar tick labels
+bottom_margin = 0.42    # space for shared x label/ticks
+top_margin = 0.06
+row_gap = 0.05           # gap between the 3 stacked time-series panels
+line_color = '#1F77B4'
 
-mplpub.setup()
+mplpub.setup(width=fig_w, height=fig_h)
 
 d = np.load(infile)
-x, y = d['x'], d['y']
-potential, residual = d['potential'], d['residual']
-t, msd, energy = d['t'], d['msd'], d['energy']
-displacement = d['displacement']
+t, traces, trace_noise = d['t'], d['traces'], d['trace_noise']
+freq, map_noise, psd_delta = d['freq'], d['map_noise'], d['psd_delta']
 
-panel = (fig_width - left_margin - mid_gap - right_margin) / 2
-fig_height = 2 * panel + top_margin + row_gap + bottom_margin
+fig = plt.figure(figsize=(fig_w, fig_h), dpi=dpi)
 
-fig = plt.figure(figsize=(fig_width, fig_height))
+# --- left column: 3 stacked time series, sharing x ---
+stack_h = fig_h - bottom_margin - top_margin
+panel_h = (stack_h - 2 * row_gap) / 3
+ymin, ymax = traces.min(), traces.max()
+pad = 0.08 * (ymax - ymin)
 
+axes_ts = []
+for i in range(3):
+    y0 = bottom_margin + i * (panel_h + row_gap)
+    ax = fig.add_axes([left_margin / fig_w, y0 / fig_h,
+                        ts_width / fig_w, panel_h / fig_h])
+    axes_ts.append(ax)
 
-def axes_rect(col, row):
-    x0 = left_margin + col * (panel + mid_gap)
-    y0 = bottom_margin + (1 - row) * (panel + row_gap)
-    return [x0 / fig_width, y0 / fig_height, panel / fig_width, panel / fig_height]
+letters = ['c)', 'b)', 'a)']  # bottom-to-top fill order, top panel is a)
+for i, ax in enumerate(axes_ts):
+    j = 2 - i  # top panel (i=2) shows the lowest noise level, trace index 0
+    ax.plot(t, traces[j], color=line_color, lw=0.6)
+    ax.set_ylim(ymin - pad, ymax + pad)
+    ax.set_xlim(t[0], t[-1])
+    ax.text(0.02, 0.95, f'{letters[i]} $\\sigma={trace_noise[j]:.2f}$',
+            transform=ax.transAxes, va='top', ha='left')
+    if ax is not axes_ts[0]:
+        ax.set_xticklabels([])
 
+axes_ts[0].set_xlabel('time')
+fig.text(0.01, bottom_margin / fig_h + stack_h / fig_h / 2, 'signal',
+         rotation='vertical', va='center', ha='left')
 
-ax_a = fig.add_axes(axes_rect(0, 0))
-ax_b = fig.add_axes(axes_rect(1, 0))
-ax_c = fig.add_axes(axes_rect(0, 1))
-ax_d = fig.add_axes(axes_rect(1, 1))
+# --- right column: one heatmap of psd_delta vs freq and noise level ---
+ax_map = fig.add_axes([(left_margin + ts_width + mid_gap) / fig_w, bottom_margin / fig_h,
+                        map_width / fig_w, stack_h / fig_h])
+ax_cbar = fig.add_axes([(left_margin + ts_width + mid_gap + map_width + cbar_gap) / fig_w,
+                         bottom_margin / fig_h, cbar_width / fig_w, stack_h / fig_h])
 
-extent = [x.min(), x.max(), y.min(), y.max()]
+vmax = np.abs(psd_delta).max()
+im = ax_map.pcolormesh(freq, map_noise, psd_delta,
+                        cmap='RdBu_r', vmin=-vmax, vmax=vmax, shading='nearest')
+ax_map.set_yscale('log')
+ax_map.set_xlabel('frequency')
+ax_map.set_ylabel('noise level $\\sigma$')
+ax_map.text(0.02, 0.97, 'd)', transform=ax_map.transAxes, va='top', ha='left',
+            bbox=dict(boxstyle='square,pad=0.1', fc='white', ec='none', alpha=0.8))
 
-# a) potential heatmap
-vlim_a = np.abs(potential).max()
-im_a = ax_a.imshow(potential, extent=extent, origin='lower', aspect='equal',
-                    cmap='RdBu_r', vmin=-vlim_a, vmax=vlim_a)
-ax_a.set_xlabel(r'$x$')
-ax_a.set_ylabel(r'$y$')
-cax_a = fig.add_axes([(left_margin + panel + cbar_pad) / fig_width,
-                       axes_rect(0, 0)[1],
-                       cbar_width / fig_width,
-                       panel / fig_height])
-fig.colorbar(im_a, cax=cax_a)
-ax_a.text(0.05, 0.95, 'a) potential', transform=ax_a.transAxes, va='top', ha='left',
-          bbox={'facecolor': 'white', 'alpha': 0.7, 'pad': 1.5, 'edgecolor': 'none'})
+cbar = fig.colorbar(im, cax=ax_cbar)
+cbar.set_label('PSD change (dB)')
 
-# b) time series: msd and energy share a time axis but not a scale
-l1, = ax_b.plot(t, msd, color=mplpub.tableau['blue'], label='MSD')
-ax_b.set_xlabel(r'$t$')
-ax_b.set_ylabel(r'MSD')
-ax_b2 = ax_b.twinx()
-l2, = ax_b2.plot(t, energy, color=mplpub.tableau['orange'], label='energy')
-ax_b2.set_ylabel(r'energy')
-ax_b2.legend(handles=[l1, l2], loc='upper left', bbox_to_anchor=(0.0, 0.88),
-             frameon=True, facecolor='white', edgecolor='none', framealpha=0.9,
-             handlelength=1.5, borderaxespad=0.1)
-ax_b.text(0.05, 0.98, 'b)', transform=ax_b.transAxes, va='top', ha='left')
+fig.align_ylabels(axes_ts + [ax_map])
 
-# c) histogram of displacement
-ax_c.hist(displacement, bins=40, color=mplpub.tableau['blue'])
-ax_c.set_xlabel(r'displacement')
-ax_c.set_ylabel(r'count')
-ax_c.text(0.85, 0.95, 'c)', transform=ax_c.transAxes, va='top', ha='right')
-
-# d) residual heatmap
-vlim_d = np.abs(residual).max()
-im_d = ax_d.imshow(residual, extent=extent, origin='lower', aspect='equal',
-                    cmap='RdBu_r', vmin=-vlim_d, vmax=vlim_d)
-ax_d.set_xlabel(r'$x$')
-ax_d.set_ylabel(r'$y$')
-cax_d = fig.add_axes([(left_margin + panel + mid_gap + panel + cbar_pad) / fig_width,
-                       axes_rect(1, 1)[1],
-                       cbar_width / fig_width,
-                       panel / fig_height])
-fig.colorbar(im_d, cax=cax_d)
-ax_d.text(0.05, 0.95, 'd) residual', transform=ax_d.transAxes, va='top', ha='left',
-          bbox={'facecolor': 'white', 'alpha': 0.7, 'pad': 1.5, 'edgecolor': 'none'})
-
-fig.align_ylabels([ax_a, ax_c])
-fig.align_ylabels([ax_b, ax_d])
-fig.align_xlabels([ax_a, ax_c, ax_b, ax_d])
-
-plt.savefig(outfile, dpi=dpi)
+fig.savefig(outfile, dpi=dpi)
+print(f'wrote {outfile}')

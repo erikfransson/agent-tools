@@ -2,46 +2,36 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 data = np.load("data.npz")
-x = data["x"]
-y = data["y"]
-potential = data["potential"]
-residual = data["residual"]
 t = data["t"]
-msd = data["msd"]
-energy = data["energy"]
-displacement = data["displacement"]
+traces = data["traces"]
+trace_noise = data["trace_noise"]
+freq = data["freq"]
+map_noise = data["map_noise"]
+psd_delta = data["psd_delta"]
 
-fig, axes = plt.subplots(2, 2, figsize=(10, 8))
+fig, axes = plt.subplot_mosaic(
+    [["ts0", "map"], ["ts1", "map"], ["ts2", "map"]],
+    figsize=(10, 6),
+)
 
-ax = axes[0, 0]
-im = ax.pcolormesh(x, y, potential, shading="auto", cmap="viridis")
-fig.colorbar(im, ax=ax, label="potential")
-ax.set_xlabel("x")
-ax.set_ylabel("y")
-ax.set_title("a) potential")
+ts_axes = [axes["ts0"], axes["ts1"], axes["ts2"]]
+for i, ax in enumerate(ts_axes):
+    ax.plot(t, traces[i], color="C0", linewidth=0.8)
+    ax.set_ylabel("signal")
+    ax.set_title(f"noise = {trace_noise[i]:.3g}")
+    if ax is ts_axes[-1]:
+        ax.set_xlabel("t")
+    else:
+        ax.set_xticklabels([])
 
-ax = axes[0, 1]
-ax2 = ax.twinx()
-l1, = ax.plot(t, msd, color="tab:blue", label="msd")
-l2, = ax2.plot(t, energy, color="tab:red", label="energy")
-ax.set_xlabel("t")
-ax.set_ylabel("msd", color="tab:blue")
-ax2.set_ylabel("energy", color="tab:red")
-ax.legend(handles=[l1, l2], loc="best")
-ax.set_title("b) time series")
-
-ax = axes[1, 0]
-ax.hist(displacement, bins=50, color="tab:green")
-ax.set_xlabel("displacement")
-ax.set_ylabel("count")
-ax.set_title("c) displacement histogram")
-
-ax = axes[1, 1]
-im = ax.pcolormesh(x, y, residual, shading="auto", cmap="coolwarm")
-fig.colorbar(im, ax=ax, label="residual")
-ax.set_xlabel("x")
-ax.set_ylabel("y")
-ax.set_title("d) residual")
+ax_map = axes["map"]
+im = ax_map.pcolormesh(
+    freq, map_noise, psd_delta, shading="auto", cmap="viridis"
+)
+ax_map.set_xlabel("frequency")
+ax_map.set_ylabel("noise level")
+ax_map.set_title("psd_delta (dB)")
+fig.colorbar(im, ax=ax_map, label="dB")
 
 fig.tight_layout()
 fig.savefig("plain.png", dpi=150)
