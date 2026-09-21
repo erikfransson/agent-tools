@@ -30,7 +30,8 @@ Runs only when invoked explicitly, and writes that one file.
 
 ## Examples
 
-- [`examples/figure-polish`](examples/figure-polish): the same sloppy 2x2 figure request, run without and with the `figure-polish` skill, with both scripts and both rendered figures.
+- [`examples/figure-polish`](examples/figure-polish): the same figure request, run without and with the `figure-polish` skill, with both scripts and both rendered figures.
+- [`examples/code-review-scientific`](examples/code-review-scientific): the same dynasor commit, reviewed without and with the `code-review-scientific` skill, with both reviews.
 
 ## Install
 
