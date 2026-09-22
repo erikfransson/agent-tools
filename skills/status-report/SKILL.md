@@ -29,5 +29,7 @@ Lead each status with its state, then the finding, remaining uncertainty, or blo
 Prefer one sentence, with extra detail only for a material finding or blocker.
 Mention scripts, files, and job IDs only when needed to understand or act on the status.
 Distinguish last-known job state from a fresh observation; this report does not itself authorize remote inspection.
+After the lists, add a `Look at:` list of at most three existing figures, tables, or similar outputs that show the most important results, each as a path with a few words on what it shows.
+Omit the list when no such output exists yet.
 Finish with the next useful action if it is not already clear.
 Reporting status does not require writing files or starting work.
