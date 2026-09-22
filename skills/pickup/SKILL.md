@@ -22,3 +22,4 @@ Keep meaningful questions and outcomes separate from implementation steps.
 Carry forward relevant decisions, constraints, and unfinished work without assuming that old permissions cover new operations.
 A pickup request establishes context; continue implementation only when the user's task authorizes it.
 End the pickup with a status report to the user in the status-report format, covering the restored or proposed objectives, any running work needing attention, and the next action or question.
+When the adopted handoff has a `Session name:`, close with `/rename <name>` on its own line for the user to paste, since built-in commands cannot be run by the agent.

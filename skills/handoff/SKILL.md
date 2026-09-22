@@ -11,7 +11,7 @@ For an older `HANDOFF.md`, read it as migration context if lowercase `handoff.md
 
 Keep these sections compact:
 
-1. **Context.** Date, repository and working directory, session purpose, and the user's intended focus for the next session if provided.
+1. **Context.** Date, repository and working directory, session purpose, the user's intended focus for the next session if provided, and a `Session name:` line with a short kebab-case slug for the work, or the name the user gives.
 2. **Objectives.** Carry over every session objective with its stable ID and wording, including completed objectives.
 3. **Status.** One entry per objective, giving its state, verified findings, remaining uncertainty, and blockers.
 4. **Running work.** Local background processes, HPC jobs, and any monitoring or waiting sessions associated with them.
