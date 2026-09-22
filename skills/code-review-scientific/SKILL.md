@@ -97,6 +97,24 @@ Record the exact base and head SHAs reviewed in the review file's Internal findi
 Before finalizing, check that the MR head has not changed, so the review is not based on stale code.
 Review work should normally not modify the MR branch; temporary local experiments are fine.
 
+## The verdict
+
+Every review ends with one verdict, and "Accept as is" is a complete and common one.
+A review that finds nothing worth raising has done its job; an empty findings list is the result, not a failed review.
+
+- **Accept as is.** No finding meets the Minor bar. Both sections read `None.`
+- **Accept after considering the Minor points.** No Major finding, and the Minor points are genuinely worth the author's attention.
+- **Changes needed.** At least one Major finding.
+
+A point earns a place only when it meets the bar under Review standards on its own merits.
+These are not findings, in any round: a style or naming preference, a rewording, an equally good alternative structure, a test the author could also have written, a concern with no named triggering condition.
+Leave them out rather than filing them as Minor, and prefer a short comment over a long one.
+
+The reviewer's job is to protect the code, not to produce findings.
+Agents asked to review will keep generating material; the lead model is the filter, and dropping a whole agent's output is a normal outcome.
+
+**Done when** a verdict is stated and every remaining point meets its bar.
+
 ## Structure and simplification
 
 Be ambitious about code structure, and do not stop at "this could be a bit cleaner".
@@ -137,6 +155,13 @@ Read the earlier review and all GitLab comments, discussions, commits, and diffs
 Do not repeat points that have already been raised unless they remain unresolved or new evidence changes the assessment.
 The entire branch remains in scope, but focus on the updated parts and their interactions with the earlier findings.
 
+A later round is free to raise a genuinely new point, Major or Minor, whether the new changes created it or the earlier rounds missed it.
+Say what you think the code needs, and a substantive batch of new Minor points belongs in the comment like any other.
+
+What rises with each round is the bar for small things.
+By the second or third round, one or two cosmetic remarks are worth less than closing the review: fold them into a sentence in the verdict, or leave them out.
+When a round has nothing left above that bar, its verdict is `Accept as is`, and saying so ends the review.
+
 ## Output
 
 Output goes into a `review-<MR-number>.md` file.
@@ -146,10 +171,11 @@ After that, `## Internal findings` can be followed by `### Sub-agent xyz` or any
 
 ### Comment block
 
-The comment block always starts with `# Review of MR <MR-number>`, followed by `## Major (Blocking)` and then `## Minor (Not-blocking)`.
+The comment block always starts with `# Review of MR <MR-number>`, then the verdict on its own line, then `## Major (Blocking)` and `## Minor (Not-blocking)`.
 Major means things that have to be addressed before merging, Minor means things to consider that do not block the merge.
 Use a numbered list for the points.
 If a section has no findings, write `None.` rather than inventing a point to fill it.
+An accepted MR can be a three-line comment: the heading, `Accept as is.`, and both sections reading `None.`
 
 The comment block should not be bloated: compact, concise, simple, clear, and human readable.
 Use a very small Python snippet when it demonstrates a bug or flaw, but do not inline large snippets.

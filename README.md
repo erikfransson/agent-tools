@@ -8,6 +8,7 @@ They run under Claude Code and Codex, which both read a `SKILL.md` from a skills
 - [`code-review-scientific`](#code-review-scientific): multi-agent review of a GitLab merge request in a scientific codebase.
 - [`figure-polish`](#figure-polish): conventions and QA for publication figures made with matplotlib and mplpub.
 - [`dream`](#dream): consolidate past session history into a short set of transferable facts loaded in every session.
+- [`status-report`, `handoff`, `pickup`](#session-skills): carry session objectives through a report, a saved handoff, and a pickup.
 
 ### `code-review-scientific`
 
@@ -27,6 +28,19 @@ Nothing is reported as finished until the rendered image has been looked at.
 Consolidates the session history of every local agent config directory into a short `~/.claude/DREAMED.md` of transferable facts: the conventions and procedures that still hold in a project that does not exist yet.
 Import that file from your `~/.claude/CLAUDE.md` with a line `@~/.claude/DREAMED.md`.
 Runs only when invoked explicitly, and writes that one file.
+
+### Session skills
+
+Three skills that keep the thread of a session, built around objectives with stable IDs such as A1, A2, B1.
+`status-report` reports the objectives, their statuses, and the blockers.
+`handoff` writes objectives, current state, and local or HPC job details to `handoff.md` in the working directory.
+`pickup` reads the repository README and that handoff, then restores or establishes the objectives.
+
+## Invocation
+
+`handoff`, `pickup`, and `dream` run only when you type their name, and cost no context otherwise.
+That takes two files: `disable-model-invocation: true` in the frontmatter for Claude Code, and `agents/openai.yaml` with `policy.allow_implicit_invocation: false` for Codex.
+The other skills keep a trigger description and can also fire on their own.
 
 ## Examples
 

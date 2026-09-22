@@ -1,6 +1,6 @@
 ---
 name: figure-polish
-description: Conventions and QA for publication figures made with matplotlib/mplpub - fixed column widths, compact multi-panel layout, trying layout variants side by side, and looking at the rendered image before calling it done. Use whenever writing or editing a plotting script, changing a figure's layout, size, colour scale or panel arrangement, or before telling the user a figure is finished or looks good. Triggers on "plot", "figure", "panel", "colorbar", "subplot", "savefig", "make a chart of", and on any request to fix, tweak or improve an existing figure.
+description: Use when writing or editing a plotting script, changing a figure's layout, size, colour scale or panel arrangement, or before telling the user a figure is finished or looks good. Triggers on "plot", "figure", "panel", "colorbar", "subplot", "savefig", "make a chart of", and on any request to fix, tweak or improve an existing figure.
 ---
 
 # Figure polish
@@ -54,24 +54,41 @@ Report what you compared and why the winner won in one or two lines, so the user
 A second pair of eyes helps when you have stared at the same figure for a while: hand the contact sheet to a subagent with the checklist below and the specific question, and read its answer as a report, not a verdict.
 You still look at the final render yourself before claiming anything.
 
-## 3. Look at it before saying it is good
+## 3. Render it, look at it, check the change landed
 
-Never report a figure as finished, correct, or looking good without having viewed the rendered image in this conversation.
+Every edit to a plotting script ends with this loop, including a one-line edit.
 
-```bash
-MPLBACKEND=Agg python plot_thing.py
-pdftoppm -png -r 100 thing.pdf /tmp/thing    # or: magick -density 100 thing.pdf thing.png
-                                             # ImageMagick 6 spells magick as convert
-```
+1. Run the script headless and convert the output to PNG.
 
-Then Read the PNG.
-If it cannot be rendered or read, say the figure is unverified.
+   ```bash
+   MPLBACKEND=Agg python plot_thing.py
+   pdftoppm -png -r 100 thing.pdf /tmp/thing    # or: magick -density 100 thing.pdf thing.png
+                                                # ImageMagick 6 spells magick as convert
+   ```
 
-One whole-figure render at 100-200 dpi shows the layout, not whether a label touches a line.
-Follow it with a render at 400-600 dpi cropped to a couple of panels at a time (`PIL.Image.crop`).
-For a local change, crop around the changed element and every immediate boundary: neighbouring axes, spines, labels, canvas edge.
-Re-render after every layout change.
-Layout bugs do not show up in the code.
+2. Read the whole-figure PNG at 100-200 dpi. This shows the layout, not whether a label touches a line.
+3. Read a 400-600 dpi crop (`PIL.Image.crop`) of a couple of panels at a time.
+   For a local change, crop around the changed element and every immediate boundary: neighbouring axes, spines, labels, canvas edge.
+4. Name the change you made and point at it in the image: the label moved, the gap closed, the colour scale now spans the data.
+   A render that looks fine but does not show the change means the edit did not take effect, and the next step is finding out why, not re-editing.
+5. Walk the checklist below against the crops.
+
+**Done when** the current script has been run, its render has been read in this conversation, and every edit since the last render is visible in the image.
+
+If the figure cannot be rendered or read, report it as unverified and say what failed.
+
+## Red flags
+
+Any of these thoughts means run the loop:
+
+- "The change was one line."
+- "The script ran without errors."
+- "I only changed a colour, the layout cannot have moved."
+- "The previous render still applies."
+- "The user can look at it themselves."
+- "The subagent said it looks good."
+
+A layout bug does not show up in the code, a clean run is not a correct figure, and a subagent's report is a lead, not a verification.
 
 ## Checklist when looking
 
