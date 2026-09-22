@@ -19,6 +19,6 @@ Read [the reporting conventions](../status-report/SKILL.md) for objective scope,
 Add related questions under the existing theme and new directions under a new letter as scope grows.
 Keep meaningful questions and outcomes separate from implementation steps.
 
-Summarize the restored or proposed objectives and statuses, flag any running work needing attention, and identify the next action or question.
 Carry forward relevant decisions, constraints, and unfinished work without assuming that old permissions cover new operations.
 A pickup request establishes context; continue implementation only when the user's task authorizes it.
+End the pickup with a status report to the user in the status-report format, covering the restored or proposed objectives, any running work needing attention, and the next action or question.
