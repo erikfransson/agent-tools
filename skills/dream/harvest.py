@@ -52,12 +52,22 @@ def text_of(content):
     return ""
 
 
+def model_tag(model, effort):
+    return "-".join(x for x in (model, effort) if x)
+
+
+# model and effort of the last assistant turn, i.e. the reply a user prompt reacts to
 def claude_records(path):
+    model = effort = ""
     with open(path, errors="ignore") as fh:
         for line in fh:
             try:
                 r = json.loads(line)
             except Exception:
+                continue
+            if r.get("type") == "assistant":
+                model = (r.get("message") or {}).get("model") or model
+                effort = r.get("perTurnEffort") or r.get("effort") or effort
                 continue
             if r.get("type") != "user" or r.get("isMeta"):
                 continue
@@ -66,11 +76,11 @@ def claude_records(path):
             if isinstance(c, list) and any(
                     isinstance(b, dict) and b.get("type") == "tool_result" for b in c):
                 continue
-            yield ts_parse(r.get("timestamp")), r.get("cwd", ""), text_of(c)
+            yield ts_parse(r.get("timestamp")), r.get("cwd", ""), model_tag(model, effort), text_of(c)
 
 
 def codex_records(path):
-    cwd = ""
+    cwd = model = effort = ""
     with open(path, errors="ignore") as fh:
         for line in fh:
             try:
@@ -81,9 +91,13 @@ def codex_records(path):
             if r.get("type") == "session_meta":
                 cwd = p.get("cwd", "") or cwd
                 continue
+            if r.get("type") == "turn_context":
+                model = p.get("model") or model
+                effort = p.get("effort") or effort
+                continue
             if r.get("type") == "response_item" and p.get("type") == "message" \
                     and p.get("role") == "user":
-                yield ts_parse(r.get("timestamp")), cwd, text_of(p.get("content"))
+                yield ts_parse(r.get("timestamp")), cwd, model_tag(model, effort), text_of(p.get("content"))
 
 
 def collect():
@@ -107,13 +121,13 @@ def collect():
         for mtime, path in files:
                 reader = codex_records if "codex" in tag else claude_records
                 try:
-                    for t, cwd, txt in reader(path):
+                    for t, cwd, model, txt in reader(path):
                         txt = (txt or "").strip()
                         if len(txt) < MIN_CHARS or SKIP.match(txt):
                             continue
                         if SIGNAL_ONLY and not SIGNAL.search(txt):
                             continue
-                        rows.append(((t or mtime), tag, cwd, txt[:MAX_CHARS]))
+                        rows.append(((t or mtime), tag, cwd, model, txt[:MAX_CHARS]))
                 except Exception:
                     continue
     return rows
@@ -123,7 +137,7 @@ rows = collect()
 rows.sort(key=lambda r: r[0])
 seen, uniq = set(), []
 for r in rows:
-    k = r[3][:200]
+    k = r[4][:200]
     if k in seen:
         continue
     seen.add(k)
@@ -139,8 +153,8 @@ with open(OUT, "w") as fh:
     for label, chunk in (("RECENT (last %d days, weight high)" % RECENT_DAYS, recent),
                          ("OLDER (weight low, confirm only)", older)):
         fh.write(f"\n\n## {label}\n")
-        for t, tag, cwd, txt in chunk:
-            fh.write(f"\n### {t.date()} [{tag}] {cwd}\n{txt}\n")
+        for t, tag, cwd, model, txt in chunk:
+            fh.write(f"\n### {t.astimezone():%Y-%m-%d %H:%M} [{tag}] {cwd} {model}\n{txt}\n")
 
 print(f"window {WINDOW}: {len(uniq)} unique prompts -> {OUT}")
 print(f"  recent {len(recent)}  older {len(older)}")

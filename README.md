@@ -27,7 +27,7 @@ Nothing is reported as finished until the rendered image has been looked at.
 
 Consolidates the session history of every local agent config directory into a short `~/.claude/DREAMED.md` of transferable facts: the conventions and procedures that still hold in a project that does not exist yet.
 Import that file from your `~/.claude/CLAUDE.md` with a line `@~/.claude/DREAMED.md`.
-Runs only when invoked explicitly, and writes that one file.
+Runs only when invoked explicitly, and writes that file plus `~/.claude/DREAMED.sources.md`, a ledger of the incidents behind each line that is never imported.
 
 ### Session skills
 

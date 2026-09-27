@@ -8,10 +8,12 @@ disable-model-invocation: true
 
 Harvest every past session across every `~/.claude*` and `~/.codex*` config directory.
 Rewrite `~/.claude/DREAMED.md` as a compact set of **transferable** facts: things that hold in a project the user has not started yet.
+Keep `~/.claude/DREAMED.sources.md` beside it, the [ledger](#ledger) of incidents behind each line.
 
-Entries read like auto-memory hooks: one line each, imperative, the fact plus the reason it matters when the reason is not obvious.
+Entries read like auto-memory hooks: one line each, imperative, the fact plus a short reason.
 
 `DREAMED.md` is imported by `~/.claude/CLAUDE.md` through a line `@~/.claude/DREAMED.md`, so it loads in every session in every project. That import is the reason to be ruthless: every line costs context on every turn, everywhere.
+The ledger is never imported, so it can hold the detail `DREAMED.md` leaves out.
 
 ## Steps
 
@@ -39,7 +41,7 @@ A window larger than the history simply takes everything.
 
 Prints the prompt count and file size.
 The corpus carries two sections: `RECENT` (last 7 days) and `OLDER`.
-Each entry is dated and tagged with its source dir and working directory.
+Each entry is stamped with local date and time, source dir, working directory, and the model and effort of the reply the prompt reacts to, when the session had one.
 
 Done when the script reports a corpus containing entries from every source directory it found.
 
@@ -58,31 +60,42 @@ Done when every entry in `RECENT` has been read, and every correction the user g
 ### 3. Select what is transferable
 
 Apply the rules in [Selection](#selection) to every candidate and to every failure mode.
-One passing line is worth more than the five corrections it generalises, so write the failure mode's line first and drop the symptoms it already covers.
+One passing line is worth more than the five corrections it generalises, so write the failure mode's line first and record the symptoms it covers as its incidents in the ledger.
+A candidate that fails only on recurrence goes into the ledger under `## Unplaced`, where later runs can count it.
 
 Done when each candidate and failure mode is either carried forward or rejected, with none left unjudged.
 
 ### 4. Merge with the current DREAMED.md
 
-Read `~/.claude/DREAMED.md`. A run consolidates it, it does not replace it.
+Read `~/.claude/DREAMED.md` and the ledger, treating a missing file as empty. A run consolidates them, it does not replace them.
 
 - Keep every existing line unless the corpus contradicts it.
-- Fold a new candidate that restates an existing line into that line; never add a second line for one fact.
+- File each new incident under the line it restates, and reword that line only if it does not already cover the incident. One fact gets one line.
+- **Distill** when two or more lines or incidents share one cause: write one line naming that cause in concrete terms, and move all their incidents under it. An incident that fits an existing line with slight rephrasing joins it the same way.
 - Replace a contradicted line with the most recent statement.
-- Drop a line only when the corpus shows the practice has changed, not merely because it went unmentioned.
+- Drop a line only when the corpus shows the practice has changed, not merely because it went unmentioned. Its incidents move to `## Unplaced`.
 
-Done when every existing line has been kept, folded, replaced, or dropped for a stated reason.
+**Backtest** every new or reworded line against each incident filed under it:
+
+1. It would have prevented that incident as clearly as the line it replaces.
+2. It forbids or demands nothing the user never asked for, so the general form stays no more restrictive than its incidents.
+
+An incident that fails the first check keeps its own line. A line that fails the second narrows until it passes.
+A line with no incidents yet, written before the ledger existed, is kept as is and collects incidents as the corpus supplies them.
+
+Done when every existing line has been kept, folded, replaced, or dropped for a stated reason, and every new or reworded line passes its backtest.
 
 ### 5. Write the diff
 
-Write the new version into the session scratchpad as `DREAMED.new.md`, then:
+Write the new versions into the session scratchpad as `DREAMED.new.md` and `DREAMED.sources.new.md`, then:
 
 ```bash
 diff -u ~/.claude/DREAMED.md <scratchpad>/DREAMED.new.md
+diff -u ~/.claude/DREAMED.sources.md <scratchpad>/DREAMED.sources.new.md
 ```
 
-Show the user the diff.
-Report the line count of the new file against the 50 to 70 line range.
+Show the user both diffs.
+Report the line count of the new `DREAMED.md` against the 100-line cap.
 
 ### 6. Install
 
@@ -90,16 +103,18 @@ The invocation itself is the user's confirmation to overwrite `~/.claude/DREAMED
 
 ```bash
 cp <scratchpad>/DREAMED.new.md ~/.claude/DREAMED.md
+cp <scratchpad>/DREAMED.sources.new.md ~/.claude/DREAMED.sources.md
 ```
 
-Report what was added, what was dropped, and the new line count.
+Report what was added, distilled, and dropped, and the new line count.
+Name the lines backed by the most incidents as candidates for the user to move into `~/.claude/CLAUDE.md` by hand.
 
 ## Selection
 
 A fact enters `DREAMED.md` only when all five hold:
 
 1. **Transferable.** It would still be true in a project that does not exist yet. `figsize=(3.4, H)` for single-column figures is transferable; the lattice parameter of CsGeBr3 is not.
-2. **Recurring.** The user stated or restated it in at least three separate sessions, or stated it once as a standing rule ("always", "never", "from now on").
+2. **Recurring.** The user stated or restated it in at least three separate sessions, counting incidents already in the ledger, or stated it once as a standing rule ("always", "never", "from now on").
 3. **Not already written.** `~/.claude/CLAUDE.md` is the single source of truth for anything it already says. Read it first and skip every overlap.
 4. **Not derivable.** The agent cannot recover it by reading the repo, the git history, or `--help`.
 5. **Procedure, not parameter.** A procedure survives a change of machine, cluster or project; a parameter is one setting on one system.
@@ -114,24 +129,40 @@ Resolve contradictions in favour of the most recent statement, and convert relat
 
 ## Shape of DREAMED.md
 
-Between 50 and 70 lines, blank lines and headings included.
-The upper end is the binding constraint: when a new fact earns a line and the file is at 70, an old one is folded or dropped to pay for it.
+At most 100 lines, blank lines and headings included, and each line as terse as its meaning allows.
+When a new fact earns a line and the file is at 100, an old one is distilled or dropped to pay for it.
 
 One `##` section per domain (Figures, Scripts, Writing, HPC, Tooling), each a bullet list. One bullet per fact, one line per bullet, written as an instruction:
 
 ```markdown
 ## Figures
-- Single column `figsize=(3.4, H)`, double column `(6.6, H)`; only H varies, so the figure drops into a paper at 100 % scale.
-- Plot scripts I run myself end with `plt.show()` after the save.
+- Single column `figsize=(3.4, H)`, double column `(6.6, H)`: only H varies, so the figure drops into a paper at 100 % scale.
+- Plot scripts I run myself end with `plt.show()` after the save, since saving after `show()` can write a blank figure.
 ```
 
-Carry the reason only when the instruction is not self-evident, in the same line after a semicolon.
+Usually carry a short reason in the same line, after a colon or as a closing clause. The reason lets the agent judge when the line applies beyond the incidents that produced it.
 No frontmatter, no index, no pointers to other files: `DREAMED.md` is read in full every session, so it holds the facts themselves.
+
+## Ledger
+
+`~/.claude/DREAMED.sources.md` keeps the evidence that session history loses as old transcripts are cleaned up, so a later run can backtest a reworded line against the incidents that produced it.
+One `##` heading per `DREAMED.md` line, its text copied verbatim, then one bullet per incident: date and time, working directory, model and effort, what the agent did, what went wrong, and the user's words.
+The ledger costs no context outside a dream run, so give each incident the detail a later backtest needs rather than the terseness `DREAMED.md` demands.
+
+```markdown
+## Plot scripts I run myself end with `plt.show()` after the save, since saving after `show()` can write a blank figure.
+- 2026-08-14 15:32 · ~/progs/phonons · claude-opus-5-5-medium · called `savefig` after `plt.show()` in the dispersion script · saved PNG was blank · "save it before you show it"
+
+## Unplaced
+- 2026-09-02 09:10 · ~/progs/md-runs · gpt-6-astra-low · resubmitted the 300 K equilibration without checking its log · the run had already finished · "that one was already done"
+```
+
+Keep headings in step with `DREAMED.md`: a reworded line renames its heading, a distilled line gathers the incidents of every line it replaces.
 
 ## Boundaries
 
 The per-project auto-memory stores under `~/.claude/projects/*/memory/` belong to the user, and a dream run leaves every one of them exactly as found.
-Read them for context; write only `~/.claude/DREAMED.md`.
+Read them for context; write only `~/.claude/DREAMED.md` and `~/.claude/DREAMED.sources.md`.
 
 Run only on an explicit invocation: `/dream` as a slash command, or `$dream` or `$ dream` in the user's message, each optionally followed by a window.
 Natural-language requests without one of those, and mentions in questions, quotes, or requests to edit the skill, do not authorize a run.
