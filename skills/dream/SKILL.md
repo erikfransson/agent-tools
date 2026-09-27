@@ -86,6 +86,8 @@ Report the line count of the new file against the 50 to 70 line range.
 
 ### 6. Install
 
+The invocation itself is the user's confirmation to overwrite `~/.claude/DREAMED.md`, so install right after showing the diff.
+
 ```bash
 cp <scratchpad>/DREAMED.new.md ~/.claude/DREAMED.md
 ```
