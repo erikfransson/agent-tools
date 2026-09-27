@@ -99,7 +99,7 @@ Report the line count of the new `DREAMED.md` against the 100-line cap.
 
 ### 6. Install
 
-The invocation itself is the user's confirmation to overwrite `~/.claude/DREAMED.md`, so install right after showing the diff.
+The invocation itself is the user's confirmation to overwrite `~/.claude/DREAMED.md` and the ledger, so install right after showing the diffs.
 
 ```bash
 cp <scratchpad>/DREAMED.new.md ~/.claude/DREAMED.md
