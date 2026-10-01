@@ -190,13 +190,17 @@ Do not post the comment on GitLab unless asked to.
 
 ### Posting
 
-When asked to post, the review goes in one top-level comment.
-Where an open thread already discusses a specific point, reply in that thread rather than restating the point in the top-level comment.
+When asked to post, anchor each finding as a diff note on the line it concerns in the file at the MR head, and reply in an open thread that already discusses the point.
+Anchor a point when that line is where the reader acts on it; the verdict, a cross-cutting structural finding, and a point spread over many lines go in the top-level comment.
+The top-level comment carries the verdict and the unanchored points, and leaves the anchored threads to speak for themselves rather than listing them.
 A follow-up round belongs as a reply in the thread carrying the earlier round.
-Everything the open threads do not cover stays in the top-level comment.
 
-Resolve a thread once its point is settled, after a short reply saying what was checked on the current head.
-Prefer resolving what the review verified itself over what the author reports as done.
-Prefer leaving a thread open while it carries an unresolved finding or an open question, since resolving it buries the point.
+The GitLab API anchors a thread through a `position` object on the discussion (base, start and head SHA, `position_type: text`, `new_path`, `new_line`), sent as a JSON body.
+`glab api -f position[...]` flattens the object and GitLab drops it silently, returning a plain `DiscussionNote`, so check that the response type is `DiffNote`.
+
+Resolve a thread the review opened once the author has answered it, with a change or with an explanation, and the point is settled, after a short reply saying what was checked on the current head, so the open threads show what remains.
+Prefer verifying the change over taking the author's report of it.
+Leave a thread open while it carries an unresolved finding or an open question, since resolving it buries the point.
+Threads other people opened stay as they are.
 
 Record the note and thread identifiers, and which threads were resolved, in the review file's Internal findings.
