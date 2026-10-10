@@ -99,7 +99,7 @@ Review work should normally not modify the MR branch; temporary local experiment
 
 ## The verdict
 
-Every review ends with one verdict, and "Accept as is" is a complete and common one.
+Every review ends with one verdict, and "Accept as is" is a complete one once the full pass has turned up nothing that meets the Minor bar.
 A review that finds nothing worth raising has done its job; an empty findings list is the result, not a failed review.
 
 - **Accept as is.** No finding meets the Minor bar. Both sections read `None.`
@@ -109,6 +109,7 @@ A review that finds nothing worth raising has done its job; an empty findings li
 A point earns a place only when it meets the bar under Review standards on its own merits.
 These are not findings, in any round: a style or naming preference, a rewording, an equally good alternative structure, a test the author could also have written, a concern with no named triggering condition.
 Leave them out rather than filing them as Minor, and prefer a short comment over a long one.
+A point that does meet the bar belongs in the comment, even when the rest of the MR is good.
 
 The reviewer's job is to protect the code, not to produce findings.
 Agents asked to review will keep generating material; the lead model is the filter, and dropping a whole agent's output is a normal outcome.
