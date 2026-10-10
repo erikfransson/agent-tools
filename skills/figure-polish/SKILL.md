@@ -34,6 +34,7 @@ Within that width, the data should be **as large as it can be**. Whitespace, dup
   One legend for the whole figure, not one per panel.
 - **`fig.align_ylabels()` on any multi-panel figure**, and `fig.align_xlabels()` when several panels carry x labels.
 - Thin colorbar: `fig.colorbar(..., aspect=40)` or higher.
+- To tell overlapping noisy lines apart, prefer drawing the bottom one wide and faint (`lw=2-5`, `alpha=0.1-0.5`) under a thin top one, since dashes get lost in noise.
 - Trim padding, but stop before the panels touch.
 - **No figure title.** The caption carries it. Put the identifying detail in the filename.
 - **Leave `fontsize=` alone.** `mplpub.setup()` already sizes everything consistently.
