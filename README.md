@@ -7,6 +7,7 @@ They run under Claude Code and Codex, which both read a `SKILL.md` from a skills
 
 - [`code-review-scientific`](#code-review-scientific): multi-agent review of a GitLab merge request in a scientific codebase.
 - [`figure-polish`](#figure-polish): conventions and QA for publication figures made with matplotlib and mplpub.
+- [`mlip-training-active-learning-for-stability`](#mlip-training-active-learning-for-stability): MD hunts for the failure modes of machine-learned potentials, and picking the onset frames that patch them.
 - [`dream`](#dream): consolidate past session history into a short set of transferable facts loaded in every session.
 - [`status-report`, `handoff`, `pickup`](#session-skills): carry session objectives through a report, a saved handoff, and a pickup.
 
@@ -22,6 +23,12 @@ Assumes the `glab` command line tool is authenticated.
 Conventions and QA for publication figures made with matplotlib and [mplpub](https://gitlab.com/materials-modeling/mplpub).
 Fixed column widths of 3.4 and 6.6 inches, compact multi-panel layout, layout variants rendered side by side into one contact sheet instead of one guess per round trip.
 Nothing is reported as finished until the rendered image has been looked at.
+
+### `mlip-training-active-learning-for-stability`
+
+Active learning aimed at stability rather than accuracy: provoke every failure mode of the current models in MD and send DFT the frames where each failure starts.
+Many seeds of heating ramps and holds on small cells, with every model variant at hand and dumps every 10 to 20 fs.
+A ledger of failure modes per motif and model drives the next batches, and the selection takes 5 to 15 frames per mode from several independent runs.
 
 ### `dream`
 
