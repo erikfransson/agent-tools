@@ -20,8 +20,8 @@ from ase.neighborlist import neighbor_list, natural_cutoffs
 
 # parameters
 trajectory_file = sys.argv[1] if len(sys.argv) > 1 else 'dump.xyz'
-n_before = 5                     # candidate frames kept before the onset
-volume_limit = 6.0               # allowed change in volume per atom vs frame 0 (Å^3)
+n_before = 5                     # candidate frames kept before the onset (plus the onset frame and one after)
+volume_limit = 0.15              # allowed relative change in volume per atom vs frame 0
 check_bond_graph = True          # heavy-atom bonds formed or broken vs frame 0
 bond_cutoff_scale = 1.25         # x natural (covalent) radii
 heavy_bonded = {'C', 'N', 'O', 'S'}   # elements whose mutual bonds define the molecules
@@ -61,7 +61,7 @@ for frame, atoms in enumerate(iread(trajectory_file, index=':')):
 df = pd.DataFrame(records)
 floors = pd.Series({f'{a}-{b}': v for (a, b), v in shortest_distances_allowed.items()})
 ok_dist = (df[floors.index] > floors).all(axis=1)
-ok_vol = (df['volume'] - df['volume'].iloc[0]).abs() < volume_limit
+ok_vol = ((df['volume'] - df['volume'].iloc[0]).abs() / df['volume'].iloc[0]) < volume_limit
 ok_bond = df['bonds_changed'] == 0 if check_bond_graph else True
 df['physical'] = ok_dist & ok_vol & ok_bond
 df.to_csv(trajectory_file.rsplit('.', 1)[0] + '_onset_scan.csv', index=False)
@@ -78,4 +78,4 @@ if not ok_vol.iloc[onset]:
 if check_bond_graph and row['bonds_changed']:
     channels.append(f'bond graph ({row["bonds_changed"]:.0f} bonds changed)')
 print(f'{len(df)} frames, onset at frame {onset} (time {row["time"]:.1f}), channels: {", ".join(channels)}')
-print(f'candidate frames for DFT: {list(range(max(0, onset - n_before), onset))}')
+print(f'candidate frames for DFT: {list(range(max(0, onset - n_before), min(onset + 2, len(df))))}')

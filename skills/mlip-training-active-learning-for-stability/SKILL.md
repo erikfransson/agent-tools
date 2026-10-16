@@ -1,6 +1,6 @@
 ---
 name: mlip-training-active-learning-for-stability
-description: Use when a machine-learned interatomic potential (NEP, MACE, any MLIP) breaks in MD and the next training generation should patch it, or when planning stability-driven structure generation for a new model generation. Triggers on "patch failure modes", "stability runs", "model collapses", "unphysical bond breaking", "volume runaway", "pick failure structures for DFT", "active learning for stability".
+description: Use when a machine-learned interatomic potential (NEP, MACE, any MLIP) breaks in MD and the next training generation should patch it, or when planning stability-driven structure generation for a new model generation. Triggers on "patch failure modes", "stability runs", "model breaks in MD", "pick failure structures for DFT", "active learning for stability".
 ---
 
 # MLIP active learning for stability
@@ -72,12 +72,18 @@ The hunt is done when every mode in the ledger has events from several independe
 - Pick for diversity within each mode: a fingerprint centred on the failing molecule or site, farthest point sampling, spread over models, cell sizes and temperatures.
 - Take frames where the structure is still recognisable. A fully collapsed frame costs DFT time and teaches little, since the next model only needs to learn that the path there is uphill.
 
-Before anything goes to DFT, an independent check (another agent or fresh code) verifies each frame: composition and charge neutrality, intact framework where expected, no unphysical contacts beyond the mode itself, forces in a sane range, no duplicates.
+Before anything goes to DFT, an **independent review** by a fresh subagent or fresh code, so the selector's assumptions are not reused, verifies each frame: composition and charge neutrality, intact framework where expected, no unphysical contacts beyond the mode itself, forces in a sane range, no duplicates.
+It also reads the selection against the ledger: every mode represented from several runs, the spread over models, cells and temperatures as planned, and no motif taking most of the budget without a failure to justify it.
 
 The step is done when every ledger mode has its frames, or a stated reason for none, and every selected frame has passed the check.
 
 ## 5. Clean up
 
 Keep the raw dumps until the selection is reviewed.
-Then remove them, keeping the run inputs, the reference frame, the logs and the event windows the selection came from.
-If storage runs short earlier, remove the dumps of runs with no event first, then of motifs that are already well covered.
+Then list them for deletion in one batch, keeping the run inputs, the reference frame, the logs and the event windows the selection came from.
+If storage runs short earlier, list the dumps of runs with no event first, then of motifs that are already well covered.
+
+## Delegation
+
+The hunt splits into independent tasks: one MD batch, the scan of one batch, the review of step 4.
+Hand those to subagents with lower capability and effort than the main session (a smaller model at medium effort does most of them), run them in parallel, and keep the ledger and the final selection in the main session.

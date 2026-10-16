@@ -7,6 +7,7 @@ They run under Claude Code and Codex, which both read a `SKILL.md` from a skills
 
 - [`code-review-scientific`](#code-review-scientific): multi-agent review of a GitLab merge request in a scientific codebase.
 - [`figure-polish`](#figure-polish): conventions and QA for publication figures made with matplotlib and mplpub.
+- [`mlip-training-initial-dataset`](#mlip-training-initial-dataset): the first training set for a machine-learned potential, sampled with foundation models before any project model exists.
 - [`mlip-training-active-learning-for-stability`](#mlip-training-active-learning-for-stability): MD hunts for the failure modes of machine-learned potentials, and picking the onset frames that patch them.
 - [`dream`](#dream): consolidate past session history into a short set of transferable facts loaded in every session.
 - [`status-report`, `handoff`, `pickup`](#session-skills): carry session objectives through a report, a saved handoff, and a pickup.
@@ -23,6 +24,13 @@ Assumes the `glab` command line tool is authenticated.
 Conventions and QA for publication figures made with matplotlib and [mplpub](https://gitlab.com/materials-modeling/mplpub).
 Fixed column widths of 3.4 and 6.6 inches, compact multi-panel layout, layout variants rendered side by side into one contact sheet instead of one guess per round trip.
 Nothing is reported as finished until the rendered image has been looked at.
+
+### `mlip-training-initial-dataset`
+
+Builds the initial dataset for a gen-1 model when no project model exists, so a foundation model (MACE by default, NEP89 for simple systems) relaxes and samples.
+One round of interview questions with defaults fixes phases, conditions, budget and families, then prototypes come from the repo, Materials Project and the literature, static families (strain, rattle, enumeration, surfaces, defects, contacts) and MD snapshots fill a set of about 100 to 300 structures of up to about 400 atoms.
+Ends when an independent reviewer has checked every structure against its name and the set against the interview; DFT is left to the project.
+Ships `recipes.md` with materials-agnostic snippets per family and an example dataset verifier.
 
 ### `mlip-training-active-learning-for-stability`
 
